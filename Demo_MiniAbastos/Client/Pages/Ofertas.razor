@@ -1,0 +1,233 @@
+﻿@page "/ofertas"
+
+<div class="container" style="height:542px">
+
+    <a href="/" class="text-decoration-none"><i class="bi bi-arrow-return-left"></i> Regresar</a>
+
+    <p class="ps-2 py-1 h5 mt-3">Ofertas</p>
+
+    <div class="row mt-3 justify-content-around p-0 border-bottom pb-2">
+
+        @foreach (var producto in Productos.Where(x => x.TienePromocion == true))
+        {
+            <div class="col-1">
+                <div class="card border border-0" style="width:140px; height: 250px;">
+                    <img src="@($"/Imagenes_Productos/Productos/{producto.UrlImagen}")" class="card-img-top" alt="..." title="@producto.Nombre">
+                    <div class="card-body p-0 text-center">
+                        <a href="/" class="text-start font-monospace" style="font-size:14px; color:black;">@producto.Marca</a>
+                        <p class="mb-0 py-1" style="font-size:14px; font-weight:lighter; overflow:hidden; text-overflow:ellipsis; height:45px;">
+                            @producto.Nombre
+                        </p>
+                        <button class="btn btn-sm btn-outline-primary w-100 position-absolute bottom-0 start-50 translate-middle-x"
+                        @onclick="(() => AbrirModal(producto.Id))" data-bs-toggle="modal" data-bs-target="#modalSeleccionProducto">
+                            Seleccionar
+                        </button>
+                    </div>
+                    @if (producto.TienePromocion == true)
+                    {
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            REBAJA -$
+                            <span class="visually-hidden">REBAJA</span>
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+
+        @for (int i = 0; i < 2; i++)
+        {
+
+            <div class="col-1">
+                <div class="card border border-0" style="width:140px; height: 250px;">
+                    @*    <img src="@($"/Imagenes_Productos/Productos/{producto.UrlImagen}")" class="card-img-top" alt="..." title="@producto.Nombre">
+                <div class="card-body p-0 text-center">
+                <a href="/" class="text-start font-monospace" style="font-size:14px; color:black;">@producto.Marca</a>
+                <p class="mb-0 py-1" style="font-size:14px; font-weight:lighter; overflow:hidden; text-overflow:ellipsis; height:45px;">
+                @producto.Nombre
+                </p>
+                <button class="btn btn-sm btn-outline-primary w-100 position-absolute bottom-0 start-50 translate-middle-x"
+                @onclick="(() => AbrirModal(producto.Id))" data-bs-toggle="modal" data-bs-target="#modalSeleccionProducto">
+                Seleccionar
+                </button>
+                </div>
+                @if (producto.TienePromocion == true)
+                {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                REBAJA -$
+                <span class="visually-hidden">REBAJA</span>
+                </span>
+                }*@
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- MODAL SELECCION PRODUCTO-->
+    <div class="modal fade" id="modalSeleccionProducto" tabindex="-1" aria-labelledby="modalSeleccionProducto" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalSeleccionProducto">Selección Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-0">
+                        <div class="col-12">
+                            <img src="@($"/Imagenes_Productos/Productos/{productoSeleccionado.UrlImagen}")" class="mx-auto d-block" alt="..."
+                                 title="Aceite vegetal 123 1 L" style="width:160px;">
+
+                            @if (productoSeleccionado.TienePromocion == true)
+                            {
+                                <span class="position-absolute translate-middle badge rounded-pill bg-danger" style="top:30px; left:220px;">
+                                    REBAJA -$
+                                    <span class="visually-hidden">REBAJA</span>
+                                </span>
+                            }
+                        </div>
+                        <div class="col-12 mt-3 text-center">
+
+                            @if (productoSeleccionado.TienePromocion == true && selectedValue == "1")
+                            {
+                                <p class="text-warning " style="font-size:20px; display:inline;">@precioSeleccionadoIndividualPromocion.ToString("$0.00")</p>
+                                <p class="text-muted text-decoration-line-through" style="font-size:15px; display:inline;">@precioSeleccionado.ToString("$0.00")</p>
+                                @if (precioSeleccionadoIndividual != 0m)
+                                {
+                                    <p class=" text-muted" style="font-size:15px; display:inline;">@($" ({precioSeleccionadoIndividual.ToString("$0.00")} c/u)")</p>
+                                }
+                            }
+                            else
+                            {
+                                <p class="" style="font-size:20px; display:inline;">@precioSeleccionado.ToString("$0.00")</p>
+                                @if (precioSeleccionadoIndividual != 0m)
+                                {
+                                    <p class=" text-muted" style="font-size:15px; display:inline;">@($" ({precioSeleccionadoIndividual.ToString("$0.00")} c/u)")</p>
+                                }
+                            }
+
+
+                        </div>
+                        <div class="col-12">
+                            <p class="mb-4 text-center font-monospace" style="font-size:18px;">@productoSeleccionado.Nombre</p>
+                        </div>
+                        <div class="col-12">
+                            @if (productoSeleccionado.CantidadEmpaques == 1)
+                            {
+                                <select class="form-select" @onchange="ManejarSelect">
+                                    <option value="1" selected>Unidad</option>
+                                </select>
+                            }
+                            @if (productoSeleccionado.CantidadEmpaques == 2)
+                            {
+                                <select class="form-select" @onchange="ManejarSelect">
+                                    <option value="1" selected>Unidad</option>
+                                    <option value="2">@productoSeleccionado.NombreSegundoEmpaque</option>
+                                </select>
+                            }
+                            @if (productoSeleccionado.CantidadEmpaques == 3)
+                            {
+                                <select class="form-select" @onchange="ManejarSelect">
+                                    <option value="1" selected>Unidad</option>
+                                    <option value="2">@productoSeleccionado.NombreSegundoEmpaque</option>
+                                    <option value="3">@productoSeleccionado.NombreTercerEmpaque</option>
+                                </select>
+                            }
+
+                        </div>
+                        <div class="col-12 mt-2">
+                            <div class="input-group">
+                                <span class="input-group-text" id="inputGroup-sizing-sm">Cantidad:</span>
+                                <input type="number" class="form-control text-end" value="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="row g-1 w-100">
+                        <div class="col-12">
+
+                            <div class="btn-group w-100" role="group" aria-label="Basic outlined example">
+                                <button type="button" class="btn btn-outline-warning" data-bs-target="#modalSeleccionProducto" data-bs-toggle="modal" @onclick="(() => {productoSeleccionado = new Producto(); precioSeleccionado = 0m; precioSeleccionadoIndividual = 0m; })">Cancelar</button>
+                                <button type="button" class="btn btn-warning" data-bs-target="#modalSeleccionProducto" data-bs-toggle="modal">Agregar al Carrito</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div style="position:fixed; bottom:70px; right:20px; ">
+    <button class="btn btn-warning">
+        <i class="bi bi-cart"></i>
+    </button>
+</div>
+
+@code {
+    public Producto productoSeleccionado = new Producto();
+
+    public decimal precioSeleccionado = 0m;
+
+    public long idSeleccionado = 0;
+    public decimal precioSeleccionadoIndividual = 0m;
+    public decimal precioSeleccionadoIndividualPromocion = 0m;
+
+    string selectedValue = "1";
+
+    public List<Producto> Productos = new List<Producto>()
+    {
+        new Producto{Id = 1, UrlImagen= "Aceite vegetal 123 1 L.png", Nombre = "Aceite vegetal 123 1L", Marca = "1 2 3", CantidadEmpaques = 3, NombreSegundoEmpaque = "Media Caja 12pz", NombreTercerEmpaque = "Caja 24pz", CantidadProductoSegundoEmpaque = 12, CantidadProductoTercerEmpaque = 24, PrecioIndividual = 56, PrecioSegundoEmpaque = 650.40m, PrecioTercerEmpaque = 1274.40m },
+        new Producto{Id = 2, UrlImagen= "Café soluble Nescafé Clásico 200 g.png", Nombre = "Café soluble Nescafé Clásico 200 g", Marca = "Nescafe", CantidadEmpaques = 3, NombreSegundoEmpaque = "Media Caja 12pz", NombreTercerEmpaque = "Caja 24pz", CantidadProductoSegundoEmpaque = 6, CantidadProductoTercerEmpaque = 12, PrecioIndividual = 110, PrecioSegundoEmpaque = 600, PrecioTercerEmpaque = 1140, TienePromocion = true, PrecioIndividualPromocion = 100  },
+        new Producto{Id = 3, UrlImagen= "Sopa instantánea Maruchan Instant Lunch con camarón y chile piquín 64 g.png", Nombre = "Sopa instantánea Maruchan Instant Lunch con camarón y chile piquín 64 g", Marca = "Maruchan", CantidadEmpaques = 2, NombreSegundoEmpaque = "Caja 24pz", CantidadProductoSegundoEmpaque = 24, PrecioIndividual = 16, PrecioSegundoEmpaque = 336},
+        new Producto{Id = 4, UrlImagen= "Galletas Oreo sabor chocolate 273g.png", Nombre = "Galletas Oreo sabor chocolate 273.6 g", Marca = "Oreo", CantidadEmpaques = 2, NombreSegundoEmpaque = "Caja 20pz", CantidadProductoSegundoEmpaque = 20, PrecioIndividual = 37, PrecioSegundoEmpaque = 660 },
+        new Producto{Id = 5, UrlImagen= "Arroz Verde Valle súper extra 1 kg.png", Nombre = "Arroz Verde Valle súper extra 1 kg", Marca = "Verde Valle", CantidadEmpaques = 3, NombreSegundoEmpaque = "Medio Paquete 5pz", NombreTercerEmpaque = "Paquete 10pz", CantidadProductoSegundoEmpaque = 5, CantidadProductoTercerEmpaque = 10, PrecioIndividual = 40, PrecioSegundoEmpaque = 190, PrecioTercerEmpaque = 360, TienePromocion = true, PrecioIndividualPromocion = 38  },
+        new Producto{Id = 6, UrlImagen= "Pasta Barilla spaghetti No.5 1 kg.png", Nombre = "Pasta Barilla spaghetti No.5 1 kg", Marca = "Barilla", CantidadEmpaques = 2, NombreSegundoEmpaque = "Caja 20pz", CantidadProductoSegundoEmpaque = 20, PrecioIndividual = 49.50m, PrecioSegundoEmpaque = 880 },
+        new Producto{Id = 7, UrlImagen= "Frijoles negros Isadora refritos 430 g.png", Nombre = "Frijoles negros Isadora refritos 430 g", Marca = "Isadora", CantidadEmpaques = 2, NombreSegundoEmpaque = "Caja 12pz", CantidadProductoSegundoEmpaque = 12, PrecioIndividual = 20, PrecioSegundoEmpaque = 216 },
+
+        new Producto{Id = 8, UrlImagen= "Petalo.png", Nombre = "Papel higiénico Pétalo 4 rollos de 310 Hojas dobles c/u", Marca = "Petalo", CantidadEmpaques = 2, NombreSegundoEmpaque = "Pauqete 12pz", CantidadProductoSegundoEmpaque = 12, PrecioIndividual = 28, PrecioSegundoEmpaque = 288, TienePromocion = true, PrecioIndividualPromocion = 26 },
+        new Producto{Id = 9, UrlImagen= "CocaCola600ml.png", Nombre = "Refresco Coca Cola botella de 600 ml", Marca = "Coca Cola", CantidadEmpaques = 3, NombreSegundoEmpaque = "Paquete 6pz", NombreTercerEmpaque = "Pauqete 24pz", CantidadProductoSegundoEmpaque = 6, CantidadProductoTercerEmpaque = 24, PrecioIndividual = 18, PrecioSegundoEmpaque = 99, PrecioTercerEmpaque = 378 },
+        new Producto{Id = 10, UrlImagen= "Savile.png", Nombre = "Acondicionador Savilé Colágeno 700 ml", Marca = "Savilé", CantidadEmpaques = 2, NombreSegundoEmpaque = "Caja 12pz", CantidadProductoSegundoEmpaque = 12, PrecioIndividual = 48, PrecioSegundoEmpaque = 504, TienePromocion = true, PrecioIndividualPromocion = 45 },
+        new Producto{Id = 11, UrlImagen= "Tempra.png", Nombre = "TEMPRA FORTE Tempra Forte adultos 650 mg 24 tabletas", Marca = "Tempra", CantidadEmpaques = 1, PrecioIndividual = 122 },
+        new Producto{Id = 12, UrlImagen= "Modelo.png", Nombre = "Cerveza Negra Modelo Munich oscura 473 ml", Marca = "Modelo", CantidadEmpaques = 3, NombreSegundoEmpaque = "Six 6pz", NombreTercerEmpaque = "pauqete 24pz", CantidadProductoSegundoEmpaque = 6, CantidadProductoTercerEmpaque = 24, PrecioIndividual = 22, PrecioSegundoEmpaque = 120, PrecioTercerEmpaque = 432 },
+        new Producto{Id = 13, UrlImagen= "Frame 20.png", Nombre = "Gel para cabello Ego For Men black 220 ml", Marca = "Ego", CantidadEmpaques = 2, NombreSegundoEmpaque = "Caja 24pz", CantidadProductoSegundoEmpaque = 24, PrecioIndividual = 30.50m, PrecioSegundoEmpaque = 575.76m, TienePromocion = true, PrecioIndividualPromocion = 26 },
+        new Producto{Id = 14 , UrlImagen= "LecheLala.png", Nombre = "Leche Lala 100 sin lactosa proteína light 1 l", Marca = "Lala", CantidadEmpaques = 2, NombreSegundoEmpaque = "Caja 12pz", CantidadProductoSegundoEmpaque = 12, PrecioIndividual = 38, PrecioSegundoEmpaque = 408 }
+    };
+
+
+    public void AbrirModal(long Id)
+    {
+        productoSeleccionado = Productos.FirstOrDefault(x => x.Id == Id);
+        idSeleccionado = productoSeleccionado.Id;
+        precioSeleccionado = productoSeleccionado.PrecioIndividual;
+        precioSeleccionadoIndividualPromocion = productoSeleccionado.PrecioIndividualPromocion;
+        selectedValue = "1";
+    }
+
+    public void ManejarSelect(ChangeEventArgs e)
+    {
+        selectedValue = e.Value.ToString();
+
+        if (selectedValue == "1")
+        {
+            @if (productoSeleccionado.TienePromocion)
+            {
+                precioSeleccionadoIndividualPromocion = productoSeleccionado.PrecioIndividualPromocion;
+            }
+            precioSeleccionado = productoSeleccionado.PrecioIndividual;
+            precioSeleccionadoIndividual = 0m;
+        }
+        else if (selectedValue == "2")
+        {
+            precioSeleccionado = productoSeleccionado.PrecioSegundoEmpaque;
+            precioSeleccionadoIndividual = (productoSeleccionado.PrecioSegundoEmpaque / productoSeleccionado.CantidadProductoSegundoEmpaque);
+        }
+        else if (selectedValue == "3")
+        {
+            precioSeleccionado = productoSeleccionado.PrecioTercerEmpaque;
+            precioSeleccionadoIndividual = (productoSeleccionado.PrecioTercerEmpaque / productoSeleccionado.CantidadProductoTercerEmpaque);
+
+        }
+
+    }
+}

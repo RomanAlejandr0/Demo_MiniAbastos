@@ -1,0 +1,234 @@
+﻿@page "/paginaFinalCompra"
+@inject IJSRuntime js
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigate
+
+<div class="container" style="height:542px;">
+
+    @if (CargandoInformacion == true)
+    {
+        <text>Cargando...</text>
+    }
+    else
+    {
+        <a href="/SeleccionarTarjeta" class="text-decoration-none"><i class="bi bi-arrow-return-left"></i> Regresar</a>
+
+        <div class="mt-2 row gx-5">
+
+            <div class="col-9" style="height:400px; ">
+                <div class="border rounded p-3" style="height:400px; overflow-y:auto; overflow-x:hidden;">
+
+                    <h6 class="mb-2">Finalizar Compra</h6>
+
+                    <table class="table font-monospace table-hover caption-top">
+                        <caption>Articulos @Carrito.Count()</caption>
+                        <thead class="table-warning">
+                            <tr class="text-center">
+                                <th scope="row" class="border-end"></th>
+                                <td class="border-end">Producto</td>
+                                <td class="border-end">Cantidad</td>
+                                <td class="border-end">Empaque</td>
+                                <td class="border-end">Precio</td>
+                                <td>Subtotal</td>
+                                @*<td></td>*@
+                            </tr>
+                        </thead>
+                        <tbody class="font-monospace">
+                            @foreach (var item in Carrito)
+                            {
+                                <tr class="text-center align-middle">
+                                    <th scope="row" class="text-start">
+                                        <img src="@($"/Imagenes_Productos/Productos/{item.UrlImagen}")" class="card-img-top" alt="..." title="@item.Nombre" style="width:50px;">
+                                    </th>
+                                    <td class="text-start">@item.Nombre</td>
+                                    <td>@item.Cantidad</td>
+                                    <td>
+                                        @item.Empaque
+                                    </td>
+                                    <td>
+                                        @item.Precio.ToString("$0.00")
+                                    </td>
+                                    <td>
+                                        @item.Subtotal.ToString("$0.00")
+                                    </td>
+                                    @*<td>*@
+                                        @*<button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash" @onclick="(() => EliminarProductoDelCarrito(item.Id))"></i></button>*@
+                                    @*</td>*@
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="font-monospace">
+                            <tr>
+                                <th scope="row" colspan="5" class="text-end">Total</th>
+                                <td class="text-center">@total.ToString("$0.00")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-3 border rounded" style="height:400px; overflow-y:auto; overflow-x:hidden;">
+
+                <div class="pt-4">
+                    <p class="lead  mb-1">Resumen Compra</p>
+                    <div class="pb-2 border-bottom">
+                        <p class="d-inline">Envio</p><p class="d-inline text-warning">   gratis</p>
+                    </div>
+
+                    <div class="row pt-3">
+                        <div class="col-6">
+                            <p class="text-start mb-1">Subtotal</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-end mb-1">@total.ToString("$0.00")</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="text-start mb-1">Iva 16%</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-end mb-1">
+                                @((total * 0.16m).ToString("$0.00"))
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row border-bottom">
+                        <div class="col-6">
+                            <p class="text-start mb-1">Total</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-end mb-1">
+                                @((total + (total * 0.16m)).ToString("$0.00"))
+                            </p>
+                        </div>
+                    </div>
+
+                    <p class="lead mb-1 mt-3">Direccion de Entrega</p>
+                    <div class="pb-2 border-bottom">
+                        <p class="text-warning mb-0">@ubicacion.Nombre</p>
+                        <p class="mb-1"> @ubicacion.Direccion</p>
+                    </div>
+
+                    <p class="lead mb-1 mt-3">Cuenta Seleccionada</p>
+                    <div class="pb-2 border-bottom">
+                        <p class="text-warning mb-0">@cuenta.NombreBanco</p>
+                        <p class="mb-1">Terminada en @(MostrarUlimosTresDigitosDeLaTarjeta(cuenta.NumeroTarjeta))</p>
+                    </div>
+
+                    <input type="date" class="form-control form-control-sm" @bind-value="@fechaEntrega" />
+
+                    <a class="btn btn-warning w-100 my-3" @onclick="ContinuarCompraPaginaFinal">
+                        Cerrar Compra
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    }
+</div>
+
+@code {
+    bool CargandoInformacion = new bool();
+
+    List<Producto> Carrito = new List<Producto>();
+    decimal total = 0m;
+
+    Ubicacion ubicacion = new Ubicacion();
+    CuentaBanco cuenta = new CuentaBanco();
+
+    List<Venta_DemoMiniabastos> venta_General = new List<Venta_DemoMiniabastos>();
+
+    DateTime fechaEntrega = DateTime.Now;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CargandoInformacion = true;
+
+        var respuesta = await manager.Get<List<Producto>>("api/productos/GetAll");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            Carrito = respuesta.Datos;
+            Carrito.ForEach(x => total += x.Subtotal);
+        }
+
+        var respuestaUbicacion = await manager.Get<Ubicacion>("api/productos/GetUbicacion");
+
+        if (respuestaUbicacion.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            ubicacion = respuestaUbicacion.Datos;
+        }
+
+        var respuestaCuenta = await manager.Get<CuentaBanco>("api/productos/GetCuenta");
+
+        if (respuestaCuenta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            cuenta = respuestaCuenta.Datos;
+        }
+
+        CargandoInformacion = false;
+    }
+
+    public async Task ContinuarCompraPaginaFinal()
+    {
+        foreach (var item in Carrito)
+        {
+            var venta = new Venta_DemoMiniabastos();
+
+            if (ubicacion.EsSucursal)
+            {
+                venta.EntregaDomicilio = false;
+            }
+            else
+            {
+                venta.EntregaDomicilio = true;
+            }
+
+            venta.FechaEntrega = fechaEntrega;
+
+            venta.Producto = item.Nombre;
+            venta.Cantidad = item.Cantidad;
+            venta.Empaque = item.Empaque;
+            venta.Precio = item.Precio;
+            venta.Subtotal = item.Subtotal;
+
+            venta_General.Add(venta);
+        }
+
+
+        var respuesta = await manager.Post<List<Venta_DemoMiniabastos>, long>("api/productos/GuardarVenta", venta_General);
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            await mostrarMensajes.MostrarMensajeExitoso(respuesta.Mensaje);
+            navigate.NavigateTo("/");
+        }
+    }
+
+    public string MostrarUlimosTresDigitosDeLaTarjeta(string cadena)
+    {
+        string ultimosTresDigitos = cadena.Substring(cadena.Length - 3);
+
+        return ultimosTresDigitos;
+    }
+
+}

@@ -1,0 +1,279 @@
+﻿@page "/SeleccionarTarjeta"
+@inject IJSRuntime js
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigate
+
+<style>
+    .list-group {
+        width: 100%;
+        max-width: 460px;
+        margin-inline: 1.5rem;
+    }
+
+    .form-check-input:checked + .form-checked-content {
+        opacity: .5;
+    }
+
+    .form-check-input-placeholder {
+        border-style: dashed;
+    }
+
+    [contenteditable]:focus {
+        outline: 0;
+    }
+
+    .list-group-checkable .list-group-item {
+        cursor: pointer;
+    }
+
+    .list-group-item-check {
+        position: absolute;
+        clip: rect(0, 0, 0, 0);
+    }
+
+        .list-group-item-check:hover + .list-group-item {
+            background-color: var(--bs-secondary-bg);
+        }
+
+        .list-group-item-check:checked + .list-group-item {
+            color: #fff;
+            background-color: var(--bs-primary);
+            border-color: var(--bs-primary);
+        }
+
+        .list-group-item-check[disabled] + .list-group-item,
+        .list-group-item-check:disabled + .list-group-item {
+            pointer-events: none;
+            filter: none;
+            opacity: .5;
+        }
+
+    .list-group-radio .list-group-item {
+        cursor: pointer;
+        border-radius: .5rem;
+    }
+
+    .list-group-radio .form-check-input {
+        z-index: 2;
+        margin-top: -.5em;
+    }
+
+    .list-group-radio .list-group-item:hover,
+    .list-group-radio .list-group-item:focus {
+        background-color: var(--bs-secondary-bg);
+    }
+
+    .list-group-radio .form-check-input:checked + .list-group-item {
+        background-color: var(--bs-body);
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 2px var(--bs-primary);
+    }
+
+    .list-group-radio .form-check-input[disabled] + .list-group-item,
+    .list-group-radio .form-check-input:disabled + .list-group-item {
+        pointer-events: none;
+        filter: none;
+        opacity: .5;
+    }
+</style>
+
+<div class="container" style="height:542px;">
+
+    @if (CargandoInformacion == true)
+    {
+        <text>Cargando...</text>
+    }
+    else
+    {
+        <a href="/SeleccionarDireccion" class="text-decoration-none"><i class="bi bi-arrow-return-left"></i> Regresar</a>
+
+        <div class="mt-2 row gx-5">
+
+            <div class="col-9" style="height:400px; ">
+                <div class="border rounded p-3" style="height:400px; overflow-y:auto; overflow-x:hidden;">
+
+                    <h6 class="mb-2">Seleccionar Direccion</h6>
+
+                    @*<div class="d-flex flex-column flex-md-row align-items-center justify-content-start">*@
+                    @*<div class="list-group list-group-radio d-grid gap-5 border-0 mx-3 mt-3">*@
+                    <div class="d-flex flex-column flex-md-row align-items-center justify-content-start">
+                        <div class="list-group mt-2" style="width:50%;">
+                            @foreach (var cuenta in Cuentas)
+                            {
+                                <div class="list-group-item d-flex gap-3 py-3" aria-current="true">
+                                    <img src="/Imagenes_Productos/@cuenta.LogoBanco" alt="twbs" width="50" height="50" class="rounded-circle flex-shrink-0 border shadow-sm">
+                                    <div class="d-flex gap-2 w-100 justify-content-between">
+                                        <div>
+                                            <h6 class="mb-0">@cuenta.NombreTitularTarjeta</h6>
+
+                                            <h6 class="mb-0">Terminada en @(MostrarUlimosTresDigitosDeLaTarjeta(cuenta.NumeroTarjeta))</h6>
+                                            <p class="mb-0 opacity-75">
+                                                @cuenta.NombreBanco
+                                            </p>
+                                            <p class="mb-0 opacity-75">
+                                                Fecha de Vencimiento @cuenta.MM/@cuenta.AA
+                                            </p>
+                                            <p class="mb-0 opacity-75">
+                                                CVV: @cuenta.CVV
+                                            </p>
+                                        </div>
+                                        @if (cuenta.CuentaBancoSeleccionada == false)
+                                        {
+                                            <small class="btn btn-link text-primary text-primary text-nowrap" @onclick="(() => SeleccionarCuenta(cuenta.Id))">Seleccionar+</small>
+                                        }
+                                        else
+                                        {
+                                            <small class="btn btn-link text-warning text-warning text-nowrap">Seleccionada</small>
+
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    @*</div>*@
+                    @*</div>*@
+
+                </div>
+            </div>
+            <div class="col-3 border rounded" style="height:400px;">
+
+                <div class="pt-4">
+                    <p class="lead  mb-1">Resumen Compra</p>
+                    <div class="pb-2 border-bottom">
+                        <p class="d-inline">Envio</p><p class="d-inline text-warning">   gratis</p>
+                    </div>
+
+                    <div class="row pt-3">
+                        <div class="col-6">
+                            <p class="text-start mb-1">Subtotal</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-end mb-1">@total.ToString("$0.00")</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="text-start mb-1">Iva 16%</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-end mb-1">
+                                @((total * 0.16m).ToString("$0.00"))
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row border-bottom">
+                        <div class="col-6">
+                            <p class="text-start mb-1">Total</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-end mb-1">
+                                @((total + (total * 0.16m)).ToString("$0.00"))
+                            </p>
+                        </div>
+                    </div>
+
+                    <p class="lead mb-1 mt-3">Direccion Entrega</p>
+                    <div class="pb-2 border-bottom">
+                        <p class="text-warning mb-0">@ubicacion.Nombre</p>
+                        <p class="mb-1"> @ubicacion.Direccion</p>
+                    </div>
+
+                    <a class="btn btn-warning w-100 mt-3" @onclick="ContinuarCompraPaginaFinal">
+                        Continuar Compra
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    }
+</div>
+
+
+@code {
+    bool CargandoInformacion = new bool();
+
+    List<Producto> Carrito = new List<Producto>();
+    decimal total = 0m;
+
+    Ubicacion ubicacion = new Ubicacion();
+
+    CuentaBanco cuentaSeleccionada = new CuentaBanco();
+    List<CuentaBanco> Cuentas = new List<CuentaBanco>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        CargandoInformacion = true;
+
+        var respuesta = await manager.Get<List<Producto>>("api/productos/GetAll");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            Carrito = respuesta.Datos;
+            Carrito.ForEach(x => total += x.Subtotal);
+        }
+
+
+        var respuestaUbicacion = await manager.Get<Ubicacion>("api/productos/GetUbicacion");
+
+        if (respuestaUbicacion.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            ubicacion = respuestaUbicacion.Datos;
+        }
+
+        var respuestaCuentas = await manager.Get<List<CuentaBanco>>("api/productos/GetCuentas");
+
+        if (respuestaCuentas.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            Cuentas = respuestaCuentas.Datos;
+        }
+
+        CargandoInformacion = false;
+    }
+
+
+    public void SeleccionarCuenta(long value)
+    {
+        Cuentas.ForEach(x => x.CuentaBancoSeleccionada = false);
+        Cuentas.FirstOrDefault(x => x.Id == value).CuentaBancoSeleccionada = true;
+
+        cuentaSeleccionada = Cuentas.FirstOrDefault(x => x.Id == value);
+    }
+
+    public async Task ContinuarCompraPaginaFinal()
+    {
+        var respuesta = await manager.Post<CuentaBanco, long>("api/productos/ActualizarCuentaSeleccionada", cuentaSeleccionada);
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            navigate.NavigateTo("/paginaFinalCompra");
+        }
+    }
+
+    public string MostrarUlimosTresDigitosDeLaTarjeta(string cadena)
+    {
+        string ultimosTresDigitos = cadena.Substring(cadena.Length - 3);
+
+        return ultimosTresDigitos;
+    }
+
+}

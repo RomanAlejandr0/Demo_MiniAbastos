@@ -1,0 +1,881 @@
+﻿@page "/perfil"
+@inject IJSRuntime js
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+
+@if (CargandoInformacion == false)
+{
+    <div style="height:600px;">
+        <a href="/" class="text-decoration-none"><i class="bi bi-arrow-return-left"></i> Regresar</a>
+
+        <div class="d-flex align-items-start pt-4">
+
+            <div class="nav flex-column nav-pills me-3 pe-4 border-end" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <button class="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill" data-bs-target="#v-pills-home"
+                        type="button" role="tab" aria-controls="v-pills-home" aria-selected="true">
+                    Perfil
+                </button>
+                <button class="nav-link" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile"
+                        type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false" style="margin-top:80px;">
+                    Pedidos
+                </button>
+                <button class="nav-link" id="v-pills-messages-tab" data-bs-toggle="pill" data-bs-target="#v-pills-messages"
+                        type="button" role="tab" aria-controls="v-pills-messages" aria-selected="false" style="margin-top:80px;">
+                    Cuentas Bancarias
+                </button>
+                <button class="nav-link" id="v-pills-settings-tab" data-bs-toggle="pill" data-bs-target="#v-pills-settings"
+                        type="button" role="tab" aria-controls="v-pills-settings" aria-selected="false" style="margin-top:80px;">
+                    Credito
+                </button>
+            </div>
+
+            <div class="tab-content" id="v-pills-tabContent" style="width:80vw; height:500px;">
+
+                <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab" tabindex="0">
+                    <div class="row g-4">
+                        <div class="col-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control bg-white" placeholder="name_example" value="Román Alejandro" readonly disabled>
+                                <label>Nombre(s)</label>
+                            </div>
+                        </div>
+
+                        <div class="col-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control bg-white" placeholder="name_example" value="@apellidos" readonly disabled>
+                                <label>Apellidos</label>
+                            </div>
+                        </div>
+
+                        <div class="col-4">
+                            <div class="form-floating">
+                                <input type="text" class="form-control bg-white" placeholder="name_example" value="9511131728" readonly disabled>
+                                <label>Telefono Casa</label>
+                            </div>
+                        </div>
+
+                        <div class="col-4">
+                            <div class="form-floating">
+                                <input type="text" class="form-control bg-white" placeholder="name_example" value="@numeroCelular" readonly disabled>
+                                <label>Telefono Celular</label>
+                            </div>
+                        </div>
+
+                        <div class="col-4">
+                            <div class="form-floating">
+                                <input type="text" class="form-control bg-white" placeholder="name_example" value="romanalejandrosantospedro@gmail.com" readonly disabled>
+                                <label>Correo Electronico</label>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <h4 class="mt-4">Domicilios</h4>
+
+                    <div class="row g-4 mt-0">
+
+                        <div class="col-12 mt-2">
+                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalAgregarDomicilio1" @onclick="LimpiarDomicilio">Nueva Direccion</button>
+                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalAgregarDomicilio1">Editar Direccion</button>
+                            <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalAgregarEditarInformacion">Editar Informacion Personal</button>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="list-group mb-3">
+                                @foreach (var ubicacion in Ubicaciones.Where(x => x.EsSucursal == false))
+                                {
+                                    <label class="list-group-item d-flex gap-2">
+                                        <input class="form-check-input flex-shrink-0" type="radio" name="listGroupRadios"
+                                               id="@ubicacion.Id" value="@ubicacion.Id" @onchange="EditarDomicilio">
+                                        <span>
+                                            @ubicacion.Nombre
+                                            <small class="d-block text-body-secondary">@ubicacion.Direccion</small>
+                                        </span>
+                                    </label>
+
+                                }
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab" tabindex="0" style="height:500px; overflow-y:scroll; overflow-x:hidden">
+
+                    <div class="row justify-content-center">
+                        <div class="col-auto border-end pe-5">
+                            <label class="col-form-label me-2">Lugar Entrega:</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1" checked>
+                                <label class="form-check-label" for="inlineCheckbox1">Domicilio</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="inlineCheckbox2" value="option2" checked>
+                                <label class="form-check-label" for="inlineCheckbox2">Sucursal</label>
+                            </div>
+                        </div>
+
+                        <div class="col-auto ps-5">
+                            <label class="col-form-label me-2">Estatus de Entrega:</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1" checked>
+                                <label class="form-check-label" for="inlineCheckbox1">Entregado</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1" checked>
+                                <label class="form-check-label" for="inlineCheckbox1">No entregado</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (productos.Count > 0)
+                    {
+                        <div class="row mt-4 px-5">
+                            <div class="border rounded shadow-sm">
+                                <table class="table my-3 font-monospace table-hover ">
+                                    <caption>Pedido 00000124</caption>
+                                    <thead class="table-warning">
+                                        <tr class="text-center">
+                                            @if (entregaDomicilio)
+                                            {
+                                                <th scope="col" colspan="2" class="border-end">Pedido con Entrega en Domicilio</th>
+
+                                            }
+                                            else
+                                            {
+                                                <th scope="col" colspan="2" class="border-end">Pedido con Entrega en Sucursal</th>
+                                            }
+                                            <th scope="col" class="border-end">@productos.Count().ToString() Articulos</th>
+                                            <th scope="col" colspan="2" class="border-end">Fecha de entrega: @fechaEntrega.Date.ToString()</th>
+                                            <th scope="col" class="table-success">No Entregado</th>
+                                        </tr>
+                                        <tr class="text-center">
+                                            <th scope="row" class="text-start border-end">#</th>
+                                            <td style="width:400px" class="border-end">Producto</td>
+                                            <td class="border-end">Cantidad</td>
+                                            <td class="border-end">Empaque</td>
+                                            <td class="border-end">Precio</td>
+                                            <td>Subtotal</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="font-monospace">
+
+                                        @foreach (var item in productos)
+                                        {
+                                            <tr class="text-center align-middle">
+                                                <th scope="row" class="text-start">@(productos.IndexOf(item) + 1).</th>
+                                                <td class="text-start">@item.Nombre</td>
+                                                <td>@item.Cantidad</td>
+                                                <td>@item.Empaque</td>
+                                                <td>@item.Precio.ToString("$0.00")</td>
+                                                <td>@item.Subtotal.ToString("$0.00")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot class="font-monospace">
+                                        <tr>
+                                            <th scope="row" colspan="5" class="text-end">Subtotal</th>
+                                            <td class="text-center">@subtotal.ToString("$0.00")</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row" colspan="5" class="text-end">IVA 16%</th>
+                                            <td class="text-center">@iva.ToString("$0.00")</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row" colspan="5" class="text-end">Total</th>
+                                            <td class="text-center">@total.ToString("$0.00")</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="row mt-3 px-5">
+                        <div class="border rounded shadow-sm">
+                            <table class="table my-3 font-monospace table-hover">
+                                <caption>Pedido 00000123</caption>
+                                <thead class="table-warning">
+                                    <tr class="text-center">
+                                        <th scope="col" colspan="2" class="border-end">Pedido con Entrega a Domicilio</th>
+                                        <th scope="col" class="border-end">5 Articulos</th>
+                                        <th scope="col" colspan="2" class="border-end">Fecha de entrega: 25/10/2023</th>
+                                        <th scope="col" class="table-success">No entregado</th>
+                                    </tr>
+                                    <tr class="text-center">
+                                        <th scope="row" class="text-start border-end">#</th>
+                                        <td style="width:400px" class="border-end">Producto</td>
+                                        <td class="border-end">Cantidad</td>
+                                        <td class="border-end">Empaque</td>
+                                        <td class="border-end">Precio</td>
+                                        <td>Subtotal</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="text-center align-middle">
+                                        <th scope="row" class="text-start">1.</th>
+                                        <td class="text-start">Aceite Vegetal 123 1L</td>
+                                        <td>2</td>
+                                        <td>Caja 24pz</td>
+                                        <td>$1274.50</td>
+                                        <td>$2548.80</td>
+                                    </tr>
+                                    <tr class="text-center align-middle">
+                                        <th scope="row" class="text-start">2.</th>
+                                        <td class="text-start">Sopa instantánea Maruchan Instant Lunch con camarón y chile piquín 64 g</td>
+                                        <td>1</td>
+                                        <td>Caja 24pz</td>
+                                        <td>$336.00</td>
+                                        <td>$336.00</td>
+                                    </tr>
+                                    <tr class="text-center align-middle">
+                                        <th scope="row" class="text-start">3.</th>
+                                        <td class="text-start">Arroz Verde Valle súper extra 1 kg</td>
+                                        <td>3</td>
+                                        <td>Paquete 10pz</td>
+                                        <td>$38.00</td>
+                                        <td>$114.00</td>
+                                    </tr>
+                                    <tr class="text-center align-middle">
+                                        <th scope="row" class="text-start">4.</th>
+                                        <td class="text-start">Leche Lala 100 lactosa proteína light 1L</td>
+                                        <td>1</td>
+                                        <td>Unidad</td>
+                                        <td>$38.00</td>
+                                        <td>$38.00</td>
+                                    </tr>
+                                    <tr class="text-center align-middle">
+                                        <th scope="row" class="text-start">5.</th>
+                                        <td class="text-start">TEMPRA FORTE Tempra Forte adultos 650 mg 24 tabletas</td>
+                                        <td>2</td>
+                                        <td>Unidad</td>
+                                        <td>$122.00</td>
+                                        <td>$224.00</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th scope="row" colspan="5" class="text-end">Subtotal</th>
+                                        <td class="text-center">$3,280.80</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" colspan="5" class="text-end">IVA 16%</th>
+                                        <td class="text-center">$594.93</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" colspan="5" class="text-end">Total</th>
+                                        <td class="text-center">$3,805.73</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4 px-5">
+                        <div class="border rounded shadow-sm">
+                            <table class="table my-3 font-monospace table-hover">
+                                <caption>Pedido 00000122</caption>
+                                <thead class="table-warning">
+                                    <tr class="text-center">
+                                        <th scope="col" colspan="2" class="border-end">Pedido con Entrega en Sucursal (Nochixtlan)</th>
+                                        <th scope="col" class="border-end">3 Articulos</th>
+                                        <th scope="col" colspan="2" class="border-end">Fecha de entrega: 15/10/2023</th>
+                                        <th scope="col" class="table-primary">Entregado</th>
+                                    </tr>
+                                    <tr class="text-center">
+                                        <th scope="row" class="text-start border-end">#</th>
+                                        <td style="width:400px" class="border-end">Producto</td>
+                                        <td class="border-end">Cantidad</td>
+                                        <td class="border-end">Empaque</td>
+                                        <td class="border-end">Precio</td>
+                                        <td>Subtotal</td>
+                                    </tr>
+                                </thead>
+                                <tbody class="font-monospace">
+                                    <tr class="text-center align-middle">
+                                        <th scope="row" class="text-start">1.</th>
+                                        <td class="text-start">Acondicionador Savilé Colágeno 700 ml </td>
+                                        <td>1</td>
+                                        <td>Caja 12pz</td>
+                                        <td>$504.00</td>
+                                        <td>$504.00</td>
+                                    </tr>
+                                    <tr class="text-center align-middle">
+                                        <th scope="row" class="text-start">2.</th>
+                                        <td class="text-start">Cerveza Negra Modelo Munich oscura 473 ml</td>
+                                        <td>3</td>
+                                        <td>Six 6pz</td>
+                                        <td>$120.00</td>
+                                        <td>$360.00</td>
+                                    </tr>
+                                    <tr class="text-center align-middle">
+                                        <th scope="row" class="text-start">3.</th>
+                                        <td class="text-start">Refresco Coca Cola botella de 600 ml</td>
+                                        <td>1</td>
+                                        <td>Unidad</td>
+                                        <td>$18.00</td>
+                                        <td>$18.00</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="font-monospace">
+                                    <tr>
+                                        <th scope="row" colspan="5" class="text-end">Subtotal</th>
+                                        <td class="text-center">$882.00</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" colspan="5" class="text-end">IVA 16%</th>
+                                        <td class="text-center">$141.12</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" colspan="5" class="text-end">Total</th>
+                                        <td class="text-center">$1,023.12</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4 px-5 mb-4">
+                        <div class="border rounded shadow-sm">
+                            <table class="table my-3 font-monospace table-hover ">
+                                <caption>Pedido 00000121</caption>
+                                <thead class="table-warning">
+                                    <tr class="text-center">
+                                        <th scope="col" colspan="2" class="border-end">Pedido con Entrega en Sucursal (Nochixtlan)</th>
+                                        <th scope="col" class="border-end">1 Articulos</th>
+                                        <th scope="col" colspan="2" class="border-end">Fecha de entrega: 10/10/2023</th>
+                                        <th scope="col" class="table-primary">Entregado</th>
+                                    </tr>
+                                    <tr class="text-center">
+                                        <th scope="row" class="text-start border-end">#</th>
+                                        <td style="width:400px" class="border-end">Producto</td>
+                                        <td class="border-end">Cantidad</td>
+                                        <td class="border-end">Empaque</td>
+                                        <td class="border-end">Precio</td>
+                                        <td>Subtotal</td>
+                                    </tr>
+                                </thead>
+                                <tbody class="font-monospace">
+                                    <tr class="text-center align-middle">
+                                        <th scope="row" class="text-start">1.</th>
+                                        <td class="text-start">Papel higiénico Pétalo 4 rollos de 310 Hojas dobles c/u</td>
+                                        <td>1</td>
+                                        <td>Paquete 12pz</td>
+                                        <td>$288.00</td>
+                                        <td>$288.00</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="font-monospace">
+                                    <tr>
+                                        <th scope="row" colspan="5" class="text-end">Subtotal</th>
+                                        <td class="text-center">$288.00</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" colspan="5" class="text-end">IVA 16%</th>
+                                        <td class="text-center">$46.08</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" colspan="5" class="text-end">Total</th>
+                                        <td class="text-center">$344.08</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="tab-pane fade" id="v-pills-messages" role="tabpanel" aria-labelledby="v-pills-messages-tab" tabindex="0">
+                    <div class="border rounded" style="height:490px; overflow-y:auto;">
+
+                        <div class="p-3">
+                            <h4>Tarjetas</h4>
+                            <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#modalAgregarTarjeta" @onclick="(() => { cuentaEdicion = new CuentaBanco(); })">Agregar Tarjeta</button>
+
+                            <div class="d-flex flex-column flex-md-row align-items-center justify-content-start">
+                                <div class="list-group mt-2" style="width:50%;">
+
+                                    @foreach (var cuenta in Cuentas)
+                                    {
+                                        <div class="list-group-item d-flex gap-3 py-3" aria-current="true">
+                                            <img src="/Imagenes_Productos/@cuenta.LogoBanco" alt="twbs" width="50" height="50" class="rounded-circle flex-shrink-0 border shadow-sm">
+                                            <div class="d-flex gap-2 w-100 justify-content-between">
+                                                <div>
+                                                    <h6 class="mb-0">@cuenta.NombreTitularTarjeta</h6>
+
+                                                    <h6 class="mb-0">Terminada en @(MostrarUlimosTresDigitosDeLaTarjeta(cuenta.NumeroTarjeta))</h6>
+                                                    <p class="mb-0 opacity-75">
+                                                        @cuenta.NombreBanco
+                                                    </p>
+                                                    <p class="mb-0 opacity-75">
+                                                        Fecha de Vencimiento @cuenta.MM/@cuenta.AA
+                                                    </p>
+                                                    <p class="mb-0 opacity-75">
+                                                        CVV: @cuenta.CVV
+                                                    </p>
+                                                </div>
+                                                <small class="btn btn-link text-danger text-danger text-nowrap" data-bs-toggle="modal" data-bs-target="#modalAgregarTarjeta" @onclick="(() => { cuentaEdicion = cuenta; })">Editar</small>
+                                            </div>
+                                        </div>
+                                    }
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab" tabindex="0">
+
+                    <div class="border rounded" style="height:490px; overflow-y:auto;">
+
+                        <div class="p-4">
+                            <div class="row">
+                                <div class="col-2">
+                                    <p class="lead">Credito Aprobado</p>
+                                </div>
+                                <div class="col-1">
+                                    <p class="text-end lead">$10,000.00</p>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-2">
+                                    <p class="lead">Credito Utilizado</p>
+                                </div>
+                                <div class="col-1">
+                                    <p class="text-end lead">$4,162.80</p>
+                                </div>
+                            </div>
+
+                            <div class="row border-bottom">
+                                <div class="col-2">
+                                    <p class="lead">Credito Disponible</p>
+                                </div>
+                                <div class="col-1">
+                                    <p class="text-end lead">$5,837.20</p>
+                                </div>
+                            </div>
+
+                            <p class="mt-3">Historial de movimientos <i class="bi bi-clock-history"></i></p>
+
+                            <table class="table" style="width:80%;">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Movimiento</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>12-10-2023</td>
+                                        <td>Pedido 00000123 guardado con entrega a Domicilio para el dia 20/10/23</td>
+                                    </tr>
+                                    <tr>
+                                        <td>11-10-2023</td>
+                                        <td>Pedido 00000122 guardado con entrega en Sucursal Nochixtlan para el dia 15/10/23 </td>
+                                    </tr>
+                                    <tr>
+                                        <td>10-10-2023</td>
+                                        <td>Pedido 00000121 entregado en Sucursal (Nochixtlan)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>10-10-2023</td>
+                                        <td>Pedido 00000121 guardado en Sucursal (Nochixtlan) </td>
+                                    </tr>
+                                    <tr>
+                                        <td>02-10-2023</td>
+                                        <td>Credito Nivel 2 Aprobado</td>
+                                    </tr>
+                                    <tr>
+                                        <td>01-10-2023</td>
+                                        <td>Cuenta Mini Abastos Creada</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+}
+else
+{
+    <p>Cargando...</p>
+}
+
+<!--MODAL AGREGAR DOMICILIO-->
+<div class="modal fade" id="modalAgregarDomicilio1" aria-hidden="true" aria-labelledby="modalAgregarDomicilio1Label2" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="modalAgregarDomicilio1Label2">Nueva Direccion</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="row g-4">
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example" @bind-value="nombreDireccion">
+                            <label>Nombre Direccion</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example" @bind-value="codigoPostal">
+                            <label>Codigo Postal</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example" @bind-value="calle">
+                            <label>Calle</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example" @bind-value="numeroExterior">
+                            <label>Numero Exterior</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example" @bind-value="localidad">
+                            <label>Localidad</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example" @bind-value="municipio">
+                            <label>Municipio</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" data-bs-dismiss="modal">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--MODAL EDITAR INFORMACION-->
+<div class="modal fade" id="modalAgregarEditarInformacion" aria-hidden="true" aria-labelledby="modalAgregarEditarInformacionLabel2" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="modalAgregarEditarInformacionLabel2">Nueva Direccion</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="row g-4">
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" value="Román Alejandro" placeholder="name_example">
+                            <label>Nombre(s)</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example" @bind="apellidos">
+                            <label>Apellidos</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" value="9511131728" placeholder="name_example">
+                            <label>Telefono Casa</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example" @bind="numeroCelular">
+                            <label>Telefono Celular</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" value="romanalejandrosantospedro@gmail.com" placeholder="name_example">
+                            <label>Correo Electronico</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="password" class="form-control" value="U?b&123" placeholder="name_example">
+                            <label>Contraseña</label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" data-bs-dismiss="modal" @onclick="@(() => GuardarCambiosInformacionPersonal())">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--MODAL AGREGAR TARJETA-->
+<div class="modal fade" id="modalAgregarTarjeta" aria-hidden="true" aria-labelledby="modalAgregarTarjetaLabel2" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="modalAgregarTarjetaLabel2">Nueva Tarjeta</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="row g-2">
+
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example" @bind-value="cuentaEdicion.NombreTitularTarjeta">
+                            <label>Nombre Titular de la Tarjeta</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example" @bind-value="cuentaEdicion.NumeroTarjeta">
+                            <label>Numero Tarjeta (16 digitos)</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example" @bind-value="cuentaEdicion.NombreBanco">
+                            <label>Banco</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example" @bind-value="cuentaEdicion.MM">
+                            <label>MM</label>
+                        </div>
+                    </div>
+
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example" @bind-value="cuentaEdicion.AA">
+                            <label>AA</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example" @bind-value="cuentaEdicion.CVV">
+                            <label>CVV</label>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+            <div class="modal-footer">
+
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+
+                @if (cuentaEdicion.Id == 0)
+                {
+                    <button class="btn btn-primary" data-bs-dismiss="modal" @onclick="(() => GuardarCuenta())">Guardar</button>
+                }
+                else
+                {
+                    <button class="btn btn-primary" data-bs-dismiss="modal">Guardar Cambios</button>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    bool CargandoInformacion = new bool();
+
+    CuentaBanco cuentaEdicion = new CuentaBanco();
+    Ubicacion ubicacionEdicion = new Ubicacion();
+
+    string nombreDireccion = string.Empty;
+    string codigoPostal = string.Empty;
+    string calle = string.Empty;
+    string numeroExterior = string.Empty;
+    string localidad = string.Empty;
+    string municipio = string.Empty;
+
+
+    string apellidos = string.Empty;
+    string numeroCelular = string.Empty;
+
+    List<CuentaBanco> Cuentas = new List<CuentaBanco>();
+    List<Ubicacion> Ubicaciones = new List<Ubicacion>();
+
+    List<Producto> productos = new List<Producto>();
+    DateTime fechaEntrega = DateTime.Now;
+    bool entregaDomicilio = false;
+    decimal subtotal = 0m;
+    decimal iva = 0m;
+    decimal total = 0m;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CargandoInformacion = true;
+
+        var respuesta = await manager.Get<List<Ubicacion>>("api/productos/GetUbicaciones");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            Ubicaciones = respuesta.Datos;
+        }
+
+
+        var respuestaCuentasBanco = await manager.Get<List<CuentaBanco>>("api/productos/GetCuentas");
+
+        if (respuestaCuentasBanco.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuestaCuentasBanco.Mensaje);
+        }
+        else
+        {
+            Cuentas = respuestaCuentasBanco.Datos;
+        }
+
+        var respuestaVenta = await manager.Get<List<Venta_DemoMiniabastos>>("api/productos/GetVentas");
+
+        if (respuestaVenta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuestaCuentasBanco.Mensaje);
+        }
+        else
+        {
+            if (respuestaVenta.Datos.Count() > 0)
+            {
+                fechaEntrega = respuestaVenta.Datos.FirstOrDefault().FechaEntrega;
+                entregaDomicilio = respuestaVenta.Datos.FirstOrDefault().EntregaDomicilio;
+
+                foreach (var item in respuestaVenta.Datos)
+                {
+                    var producto = new Producto();
+                    producto.Nombre = item.Producto;
+                    producto.Cantidad = item.Cantidad;
+                    producto.Empaque = item.Empaque;
+                    producto.Precio = item.Precio;
+                    producto.Subtotal = item.Subtotal;
+
+                    productos.Add(producto);
+                }
+
+                productos.ForEach(x => subtotal += x.Subtotal);
+                iva = subtotal * 0.16m;
+                total = subtotal + iva;
+            }
+        }
+
+        CargandoInformacion = false;
+    }
+
+    public string MostrarUlimosTresDigitosDeLaTarjeta(string cadena)
+    {
+        string ultimosTresDigitos = cadena.Substring(cadena.Length - 3);
+
+        return ultimosTresDigitos;
+    }
+
+
+    public async Task GuardarCuenta()
+    {
+        cuentaEdicion.LogoBanco = "Logo_BancoAzteca.png";
+
+        var respuesta = await manager.Post<CuentaBanco, long>("api/productos/GuardarCuenta", cuentaEdicion);
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            Cuentas.Add(cuentaEdicion);
+            cuentaEdicion = new CuentaBanco();
+        }
+    }
+
+    public void EditarDomicilio(ChangeEventArgs e)
+    {
+
+        string selectedOption = e.Value.ToString();
+        long idDireccion = long.Parse(selectedOption);
+
+
+        if (selectedOption == "1")
+        {
+            nombreDireccion = "Casa";
+            codigoPostal = "54963";
+            calle = "";
+            numeroExterior = "s/n";
+            localidad = "Fraccionamiento Paseos de Tultepec 2";
+            municipio = "Tultepec";
+        }
+        else if (selectedOption == "2")
+        {
+            nombreDireccion = "Local 1";
+            codigoPostal = "69000";
+            calle = "Calle Porfirio Diaz";
+            numeroExterior = "S/N";
+            localidad = "";
+            municipio = "Oaxaca de Juarez";
+        }
+        else if (selectedOption == "3")
+        {
+            nombreDireccion = "Local 2";
+            codigoPostal = "69000";
+            calle = "Jose Maria de Morelos";
+            numeroExterior = "19";
+            localidad = "El Calvario";
+            municipio = "Asuncion Nochixtlan";
+        }
+    }
+
+    public void LimpiarDomicilio()
+    {
+        nombreDireccion = string.Empty;
+        codigoPostal = string.Empty;
+        calle = string.Empty;
+        numeroExterior = string.Empty;
+        localidad = string.Empty;
+        municipio = string.Empty;
+    }
+
+    public async Task GuardarCambiosInformacionPersonal()
+    {
+            await mostrarMensajes.MostrarMensajeExitoso("Informacion Actualizada correctamente");
+    }
+}

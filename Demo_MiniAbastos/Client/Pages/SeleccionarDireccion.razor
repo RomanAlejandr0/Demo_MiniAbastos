@@ -1,0 +1,458 @@
+﻿@page "/SeleccionarDireccion"
+@inject IJSRuntime js
+@inject IManager manager
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigate
+
+<style>
+    .list-group {
+        width: 100%;
+        max-width: 460px;
+        margin-inline: 1.5rem;
+    }
+
+    .form-check-input:checked + .form-checked-content {
+        opacity: .5;
+    }
+
+    .form-check-input-placeholder {
+        border-style: dashed;
+    }
+
+    [contenteditable]:focus {
+        outline: 0;
+    }
+
+    .list-group-checkable .list-group-item {
+        cursor: pointer;
+    }
+
+    .list-group-item-check {
+        position: absolute;
+        clip: rect(0, 0, 0, 0);
+    }
+
+        .list-group-item-check:hover + .list-group-item {
+            background-color: var(--bs-secondary-bg);
+        }
+
+        .list-group-item-check:checked + .list-group-item {
+            color: #fff;
+            background-color: var(--bs-primary);
+            border-color: var(--bs-primary);
+        }
+
+        .list-group-item-check[disabled] + .list-group-item,
+        .list-group-item-check:disabled + .list-group-item {
+            pointer-events: none;
+            filter: none;
+            opacity: .5;
+        }
+
+    .list-group-radio .list-group-item {
+        cursor: pointer;
+        border-radius: .5rem;
+    }
+
+    .list-group-radio .form-check-input {
+        z-index: 2;
+        margin-top: -.5em;
+    }
+
+    .list-group-radio .list-group-item:hover,
+    .list-group-radio .list-group-item:focus {
+        background-color: var(--bs-secondary-bg);
+    }
+
+    .list-group-radio .form-check-input:checked + .list-group-item {
+        background-color: var(--bs-body);
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 2px var(--bs-primary);
+    }
+
+    .list-group-radio .form-check-input[disabled] + .list-group-item,
+    .list-group-radio .form-check-input:disabled + .list-group-item {
+        pointer-events: none;
+        filter: none;
+        opacity: .5;
+    }
+</style>
+
+<div class="container" style="height:542px;">
+
+    @if (CargandoInformacion == true)
+    {
+        <text>Cargando...</text>
+    }
+    else
+    {
+        <a href="/VerCarrito" class="text-decoration-none"><i class="bi bi-arrow-return-left"></i> Regresar</a>
+
+        <div class="mt-2 row gx-5">
+
+            <div class="col-9" style="height:400px; ">
+                <div class="border rounded p-3" style="height:400px; overflow-y:auto; overflow-x:hidden;">
+
+                    <h6 class="mb-2">Seleccionar Direccion</h6>
+
+                    <div class="d-flex flex-column flex-md-row align-items-center justify-content-start">
+                        <div class="list-group list-group-radio d-grid gap-5 border-0 mx-3 mt-3">
+
+                            <div>
+                                <button class="btn btn-link" @onclick="AbrirModalSeleccionDireccion" data-bs-toggle="modal" data-bs-target="#modalSeleccionarDomicilio">Eligir otra Dirección</button>
+                                <div class="position-relative" style="width:700px;">
+                                    <input class="form-check-input position-absolute top-50 end-0 me-3 fs-5" type="radio" name="listGroupRadioGrid" id="listGroupRadioGrid1"
+                                           value="@direccionSeleccionada.Id" checked="@(direccionSeleccionada.UbicacionSeleccionada)" @onchange="SeleccionarUbicacionSeleccionadaGlobal">
+                                    <label class="list-group-item py-3 pe-5" for="listGroupRadioGrid1">
+                                        <strong class="fw-semibold">@direccionSeleccionada.Nombre</strong>
+                                        <span class="d-block small opacity-75">@direccionSeleccionada.Direccion</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <button class="btn btn-link" @onclick="AbrirModalSeleccionSucursal" data-bs-toggle="modal" data-bs-target="#modalSeleccionarDomicilio">Eligir otra Sucursal</button>
+                                <div class="position-relative">
+                                    <input class="form-check-input position-absolute top-50 end-0 me-3 fs-5" type="radio" name="listGroupRadioGrid" id="listGroupRadioGrid2"
+                                           value="@sucursalSeleccionada.Id" @onchange="SeleccionarUbicacionSeleccionadaGlobal" checked="@(direccionSeleccionada.UbicacionSeleccionada)">
+                                    <label class="list-group-item py-3 pe-5" for="listGroupRadioGrid2">
+                                        <strong class="fw-semibold">@sucursalSeleccionada.Nombre</strong>
+                                        <span class="d-block small opacity-75">@sucursalSeleccionada.Direccion</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="col-3 border rounded" style="height:400px;">
+
+                <div class="pt-4">
+                    <p class="lead  mb-1">Resumen Compra</p>
+                    <div class="pb-2 border-bottom">
+                        <p class="d-inline">Envio</p><p class="d-inline text-warning">   gratis</p>
+                    </div>
+
+                    <div class="row pt-3">
+                        <div class="col-6">
+                            <p class="text-start mb-1">Subtotal</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-end mb-1">@total.ToString("$0.00")</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="text-start mb-1">Iva 16%</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-end mb-1">
+                                @(
+                                    (total * 0.16m).ToString("$0.00")
+                                    )
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="text-start mb-1">Total</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-end mb-1">
+                                @(
+                                    (total + (total * 0.16m)).ToString("$0.00")
+                                    )
+                            </p>
+                        </div>
+                    </div>
+
+                    <a class="btn btn-warning w-100 mt-3" @onclick="ContinuarCompraASeleccionTarjeta">
+                        Continuar Compra
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    }
+</div>
+
+<!--MODAL SELECCIONAR DIRECCION SUCURSAL-->
+<div class="modal fade" id="modalSeleccionarDomicilio" aria-hidden="true" aria-labelledby="modalSeleccionarDomicilioLabel2" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="modalSeleccionarDomicilioLabel2">Seleccionar Direccion</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+
+                    @if (MostrarSeleccionarSucursal)
+                    {
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">CP o Sucursal</span>
+                                    <input type="text" class="form-control">
+                                    <button class="btn btn-outline-secondary" type="button">Buscar</button>
+                                </div>
+
+                            </div>
+
+                            <div class="col-12" style="height:250px;">
+                                <div class="list-group mx-0" @onchange="ModalSeleccionSucursal">
+                                    @foreach (var ubicacion in Ubicaciones.Where(x => x.EsSucursal == true))
+                                    {
+                                        <label class="list-group-item d-flex gap-2">
+                                            <input class="form-check-input flex-shrink-0" type="radio" name="listGroupRadios" id="@ubicacion.Id"
+                                                   value="@ubicacion.Id" checked="@(ubicacion.Id == 1)" @onchange="ModalSeleccionSucursal">
+                                            <span>
+                                                @ubicacion.Nombre
+                                                <small class="d-block text-body-secondary">@ubicacion.Direccion</small>
+                                            </span>
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (MostrarSeleccionarDomicilio)
+                    {
+                        <div class="row mt-3">
+                            <div class="col-12 mb-3 pb-3">
+                                <button class="btn btn-sm btn-warning w-100" data-bs-toggle="modal" data-bs-target="#modalAgregarDomicilio1">Agregar Direccion</button>
+                            </div>
+
+                            <div class="col-12" style="height:250px;">
+                                <div class="list-group mb-3 mx-0">
+                                    @foreach (var ubicacion in Ubicaciones.Where(x => x.EsSucursal == false))
+                                    {
+                                        <label class="list-group-item d-flex gap-2">
+                                            <input class="form-check-input flex-shrink-0" type="radio" name="listGroupRadios" id="@ubicacion.Id"
+                                                   value="@ubicacion.Id" checked="@(ubicacion.Id == 4)" @onchange="ModalSeleccionDireccion">
+                                            <span>
+                                                @ubicacion.Nombre
+                                                <small class="d-block text-body-secondary">@ubicacion.Direccion</small>
+                                            </span>
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" data-bs-dismiss="modal" @onclick="SeleccionarDireccionModal">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--MODAL AGREGAR DOMICILIO-->
+<div class="modal fade" id="modalAgregarDomicilio1" aria-hidden="true" aria-labelledby="modalAgregarDomicilio1Label2" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="modalAgregarDomicilio1Label2">Nueva Direccion</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="row g-4">
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example">
+                            <label>Nombre Direccion</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example">
+                            <label>Codigo Postal</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example">
+                            <label>Calle</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example">
+                            <label>Numero Exterior</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example">
+                            <label>Localidad</label>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" placeholder="name_example">
+                            <label>Municipio</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" data-bs-dismiss="modal">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    bool CargandoInformacion = new bool();
+
+    List<Producto> Carrito = new List<Producto>();
+    decimal total = 0m;
+
+    Ubicacion ubicacionSeleccionada = new Ubicacion();
+
+    bool MostrarSeleccionarSucursal = false;
+    bool MostrarSeleccionarDomicilio = false;
+
+    public List<Ubicacion> Ubicaciones = new List<Ubicacion>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CargandoInformacion = true;
+
+        var respuesta = await manager.Get<List<Producto>>("api/productos/GetAll");
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            Carrito = respuesta.Datos;
+            Carrito.ForEach(x => total += x.Subtotal);
+        }
+
+        var respuestaUbicaciones = await manager.Get<List<Ubicacion>>("api/productos/GetUbicaciones");
+
+        if (respuestaUbicaciones.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuestaUbicaciones.Mensaje);
+        }
+        else
+        {
+            Ubicaciones = respuestaUbicaciones.Datos;
+        }
+
+
+        var respuestaUbicacion = await manager.Get<Ubicacion>("api/productos/GetUbicacion");
+
+        if (respuestaUbicacion.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            if (respuestaUbicacion.Datos.EsSucursal)
+            {
+                sucursalSeleccionada = respuestaUbicacion.Datos;
+                direccionSeleccionada = Ubicaciones.First(x => x.Id == 1);
+
+            }
+            else
+            {
+                direccionSeleccionada = respuestaUbicacion.Datos;
+                sucursalSeleccionada = Ubicaciones.First(x => x.Id == 4);
+            }
+        }
+
+
+        CargandoInformacion = false;
+    }
+
+    Ubicacion direccionSeleccionadaModal = new Ubicacion();
+    Ubicacion sucursalSeleccionadaModal = new Ubicacion();
+
+
+    Ubicacion direccionSeleccionada = new Ubicacion();
+    Ubicacion sucursalSeleccionada = new Ubicacion();
+
+
+    public void AbrirModalSeleccionDireccion()
+    {
+        MostrarSeleccionarDomicilio = true;
+        MostrarSeleccionarSucursal = false;
+    }
+
+    public void AbrirModalSeleccionSucursal()
+    {
+        MostrarSeleccionarSucursal = true;
+        MostrarSeleccionarDomicilio = false;
+    }
+
+    public void ModalSeleccionDireccion(ChangeEventArgs e)
+    {
+        string selectedOption = e.Value.ToString();
+        long idDireccion = long.Parse(selectedOption);
+
+        direccionSeleccionadaModal = Ubicaciones.First(x => x.Id == idDireccion);
+    }
+
+    public void ModalSeleccionSucursal(ChangeEventArgs e)
+    {
+        string selectedOption = e.Value.ToString();
+        long idDireccion = long.Parse(selectedOption);
+
+        sucursalSeleccionadaModal = Ubicaciones.First(x => x.Id == idDireccion);
+    }
+
+    public void SeleccionarDireccionModal()
+    {
+        if (MostrarSeleccionarSucursal == true)
+        {
+            sucursalSeleccionada = sucursalSeleccionadaModal;
+        }
+        else if (MostrarSeleccionarDomicilio)
+        {
+            direccionSeleccionada = direccionSeleccionadaModal;
+        }
+    }
+
+    public void SeleccionarUbicacionSeleccionadaGlobal(ChangeEventArgs e)
+    {
+        string selectedOption = e.Value.ToString();
+        long idDireccion = long.Parse(selectedOption);
+
+        ubicacionSeleccionada = Ubicaciones.First(x => x.Id == idDireccion);
+    }
+
+    public async Task ContinuarCompraASeleccionTarjeta()
+    {
+        var respuesta = await manager.Post<Ubicacion, long>("api/productos/ActualizarUbicacionSeleccionada", ubicacionSeleccionada);
+
+        if (respuesta.Estado == EstadosDeRespuesta.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(respuesta.Mensaje);
+        }
+        else
+        {
+            navigate.NavigateTo("/seleccionarTarjeta");
+        }
+    }
+}
